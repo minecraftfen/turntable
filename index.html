@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>转盘</title>
+    <script>
+      console.log(
+        "\n%cRandom Wheel\n%c%s\n%cBy Ivor%c\n\n",
+        "color: #888; font-size: 2em;",
+        "color: #666; font-size: 1.5em;",
+        "v0.3.1-beta",
+        "color: #000;font-size: 0.75em;padding:0.125em 0.5em;margin:0.5em;background-color: #fff;border-radius:0.125em;",
+        ""
+      );
+      console.log(
+        "%c调试页面%c\n" +
+          "如果你是意外打开这个页面的，不用惊慌，在下一个意外发生前关掉这个页面即可。\n" +
+          "如果你想提交调试信息，那么请严格按照引导操作，这里毕竟还是有些危险的。\n" +
+          "无论如何，祝你顺利完成你想做的事。\n",
+        "font-family: sans-serif;font-size: 2em;margin:0.5em;",
+        "font-family: sans-serif;margin:0;"
+      );
+    </script>
+    <style>
+      body {
+        color: #fff;
+        background-color: #222;
+        --time: 0.5s;
+        --time-fun: ease;
+        --mult: 1;
+        --delta: 0deg;
+        -webkit-user-select: none;
+        user-select: none;
+        overflow: hidden;
+        padding: 0;
+        margin: 0;
+        font-family: sans-serif;
+      }
+      #setting-button {
+        padding: 0.125em;
+        border-radius: 0.25em;
+        font-size: max(0.75em, 2.5vmin);
+        flex: none;
+        transition: 250ms;
+        color: #aaa;
+      }
+      #setting-button::after {
+        border-left: 0.5em solid #aaa;
+        transition: 250ms;
+      }
+      #setting-button:hover {
+        transform: translate(6.25%, 0);
+        color: #ddd;
+      }
+      #setting-button:hover::after {
+        border-left: 0.5em solid #ddd;
+      }
+      #setting-button:active {
+        transform: translate(12.5%, 0);
+        color: #fff;
+      }
+      #setting-button:active::after {
+        border-left: 0.5em solid #fff;
+      }
+      #setting-button.disabled {
+        transform: translate(-12.5%, 0);
+        opacity: 0;
+        pointer-events: none;
+      }
+      #setting {
+        padding: 1em;
+        width: calc(100vw - 2em);
+        height: calc(100vh - 2em);
+        background-color: #222e;
+        position: fixed;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        transform: translate(-25%, 0);
+        pointer-events: none;
+        opacity: 0;
+        transition: 250ms;
+      }
+      #setting.disabled {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #setting.active {
+        pointer-events: initial;
+        transform: none;
+        opacity: 1;
+      }
+      #setting label,
+      #setting input,
+      #setting textarea {
+        display: block;
+        margin: 0.25em;
+      }
+      #setting label {
+        margin-top: 1.5em;
+      }
+      #setting input[type="button"],
+      #setting textarea {
+        background-color: #fff4;
+        border: none;
+        outline: none;
+        color: #fff;
+        padding: 0.5em 0.75em;
+        margin: 0 0.05em;
+        transition: 250ms;
+      }
+      #setting input[type="button"].red {
+        background-color: #e74c3c88;
+      }
+      #setting input[type="button"].red:hover {
+        background-color: #e74c3caa;
+      }
+      #setting input[type="button"].red:active {
+        background-color: #e74c3ccc;
+      }
+      #setting input[type="button"]:first-child,
+      #setting input[type="button"].first {
+        border-radius: 0.5em 0 0 0.5em;
+        margin-left: 0;
+      }
+      #setting input[type="button"]:last-child,
+      #setting input[type="button"].last {
+        border-radius: 0 0.5em 0.5em 0;
+        margin-right: 0;
+      }
+      #setting input[type="button"]:only-child,
+      #setting input[type="button"].first.last {
+        border-radius: 0.5em;
+        margin-right: 0;
+      }
+      #setting input[type="button"].first.last:not(:last-child) {
+        margin-right: 0.5em;
+      }
+      #setting input[type="button"].first.last:not(:first-child) {
+        margin-left: 0.5em;
+      }
+      #setting input[type="button"]:hover,
+      #setting textarea:hover {
+        background-color: #fff6;
+      }
+      #setting input[type="button"].warn:hover {
+        background-color: #e74c3c66;
+      }
+      #setting input[type="button"]:active {
+        background-color: #fff8;
+      }
+      #setting input[type="button"].warn:active {
+        background-color: #e74c3c88;
+      }
+      #setting textarea {
+        flex: 1;
+        padding: 1em;
+        border-radius: 1em;
+        margin: 0.5em;
+        font-family: sans-serif;
+        resize: none;
+      }
+      #setting textarea::placeholder {
+        color: #ccc;
+      }
+      .buttons {
+        margin-top: 0.5em;
+        display: flex;
+        justify-content: flex-start;
+        line-height: 100%;
+        align-items: center;
+        margin-right: 0.5em;
+      }
+      .buttons .buttons,
+      .buttons.sub {
+        margin: 0 0.5em;
+        opacity: 0;
+        position: relative;
+        transform: translate(-25%, 0);
+        z-index: -1;
+        transition: 250ms;
+        border-radius: 0.5em;
+        padding-left: 0.5em;
+        pointer-events: none;
+      }
+      .buttons .buttons.active,
+      .buttons.sub.active {
+        pointer-events: initial;
+        z-index: 2;
+        opacity: 1;
+        transform: none;
+      }
+      .buttons .buttons.active.focus,
+      .buttons.sub.active.focus {
+        animation: outline 1s both;
+      }
+      @keyframes outline {
+        0%,
+        100% {
+          outline: 0 solid #fff;
+        }
+        33%,
+        66% {
+          outline: 0.125em solid #fff;
+        }
+      }
+      @supports (backdrop-filter: blur(1em)) {
+        #setting {
+          background-color: #2224;
+          backdrop-filter: blur(1em);
+        }
+      }
+      #msgbar {
+        font-size: 3vw;
+        position: fixed;
+        left: 0.5em;
+        bottom: 0.5em;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      #count::before {
+        content: "剩余";
+      }
+      #count::after {
+        content: "个选项";
+      }
+      .wheelOuter.overview {
+        position: absolute;
+        transform: translate(0, -50%);
+        top: 50vh;
+        max-height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+      }
+      .wheelOuter.overview::before,
+      .wheelOuter.overview::after {
+        display: block;
+        content: "";
+        height: 5vw;
+      }
+      .overview ~ #labelOuter {
+        transform: translate(-25%, -50%);
+        opacity: 0;
+      }
+      html .wheelOuter.overview > div {
+        position: static;
+        transform: translate(75vw, 0);
+        opacity: 1;
+        margin: 0.25em;
+        padding: 0;
+        transition: 0.5s;
+        font-size: 5vw;
+        width: 20vw;
+        background-color: transparent;
+      }
+      html .wheelOuter.overview > div.repeat {
+        opacity: 0;
+        position: absolute;
+      }
+      html .wheelOuter.overview > div.disabled {
+        background-color: #fff;
+      }
+      .wheelOuter.rolling {
+        --time-fun: linear;
+      }
+      .wheelOuter > div {
+        --count: 6;
+        --scale: 1;
+        position: fixed;
+        left: 0;
+        top: 50vh;
+        transform: rotate(calc(var(--count) * 22.5deg - 45deg))
+          translate(75vw, -50%) scale(var(--scale));
+        opacity: 0;
+        font-size: 7.5vw;
+        width: 25vw;
+        text-align: center;
+        transition: transform var(--time) var(--time-fun), opacity var(--time),
+          background-color 0.5s, color 0.5s;
+        padding-bottom: 0.125em;
+        margin-top: 0.125em;
+        border-radius: 0.25em;
+      }
+      .wheelOuter > div:hover {
+        background-color: #fff4;
+        --scale: 1.0625;
+      }
+      .wheelOuter.rolling > div {
+        background-color: transparent;
+        --scale: 1;
+      }
+      .wheelOuter > div.disabled {
+        text-decoration: line-through;
+        background-color: #fff;
+        color: #000;
+      }
+      .wheelOuter > div:nth-child(1) {
+        --count: -1;
+        opacity: 0;
+      }
+      .wheelOuter > div:nth-child(2) {
+        --count: 0;
+        opacity: calc(1 / 3);
+      }
+      .wheelOuter > div:nth-child(3) {
+        --count: 1;
+        opacity: calc(2 / 3);
+      }
+      .wheelOuter > div:nth-child(4) {
+        --count: 2;
+        opacity: 1;
+      }
+      .wheelOuter > div:nth-child(5) {
+        --count: 3;
+        opacity: calc(2 / 3);
+      }
+      .wheelOuter > div:nth-child(6) {
+        --count: 4;
+        opacity: calc(1 / 3);
+      }
+      .wheelOuter > div:nth-child(7) {
+        --count: 5;
+        opacity: 0;
+      }
+      #labelOuter {
+        position: fixed;
+        right: 30vw;
+        top: 50vh;
+        transform: translate(0, -50%);
+        font-size: 10vw;
+        transition: transform 0.5s, opacity 0.5s;
+      }
+      #labelOuter.triangle::after {
+        margin-left: 5vw;
+        transform: scale(0.25);
+      }
+      .triangle {
+        display: flex;
+        align-items: center;
+      }
+
+      .triangle::after {
+        content: "";
+        display: inline-block;
+        width: 0;
+        height: 0;
+        border: 0.5em solid transparent;
+        border-left: 0.5em solid #fff;
+        margin-top: 0.15em;
+        margin-left: 0.25em;
+        transform: scale(0.75);
+      }
+      datalist {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      option {
+        padding: 0;
+      }
+    </style>
+    <style>
+      #wheel-speed-label::before {
+        content: "转盘动画时长：";
+      }
+      #wheel-speed-label::after {
+        content: "秒";
+      }
+    </style>
+  </head>
+  <body>
+<!-- 调试页面
+如果你是意外打开这个页面的，不用惊慌，在下一个意外发生前关掉这个页面即可。
+如果你想提交调试信息，那么请严格按照引导操作，这里毕竟还是有些危险的。
+无论如何，祝你顺利完成你想做的事
+-->
+    <div id="labelOuter" class="triangle">???</div>
+    <div id="infoOuter"></div>
+    <div id="msgbar">
+      <div id="setting-button" class="triangle">设置</div>
+      <div id="count">0</div>
+      <div id="help"></div>
+    </div>
+    <form id="setting">
+      <label for="wheel-speed" id="wheel-speed-label">5</label>
+      <input
+        type="range"
+        name="wheel-speed"
+        id="wheel-speed"
+        min="0"
+        max="10"
+        step="1"
+        value="5"
+        list="timemarks"
+      />
+      <datalist id="timemarks">
+        <option value="0" label="&nbsp;&nbsp;| 0秒(禁用动画)"></option>
+        <option value="5" label="&nbsp;&nbsp;| 5秒(默认)"></option>
+        <option value="10" label="10秒 |&nbsp;&nbsp;"></option>
+      </datalist>
+      <label for="item-list">
+        选项列表，可混用任意空白字符或中英文逗号/句号/分号分隔，重复选项只会保留一个。
+      </label>
+      <textarea
+        name="item-list"
+        id="item-list"
+        cols="30"
+        rows="10"
+        placeholder=""
+        resizeable="false"
+      ></textarea>
+      <div class="buttons">
+        <input
+          type="button"
+          value="返回主界面"
+          id="setting-close"
+          class="first last"
+        />
+        <input
+          type="button"
+          value="取消更改"
+          id="setting-cancel"
+          class="warn first"
+        />
+        <input type="button" value="保存" id="setting-save" class="last" />
+        <input
+          type="button"
+          value="还原至默认"
+          id="setting-reset"
+          class="warn first last"
+        />
+        <div class="buttons sub" id="setting-confirm-menu">
+          确定要这么做？
+          <input type="button" id="setting-confirm-cancel" value="取消" />
+          <input type="button" id="setting-confirm" value="确定" class="red" />
+        </div>
+      </div>
+    </form>
+    <script>
+      // Library
+      /** TODO:
+       * initialize all parameters in constructors
+       * add weight feature to Chooser class
+       * warning msg dict
+       */
+      (() => {
+        class Tools {
+          static arrayLast(arr) {
+            Tools.testType(arr, "Array");
+            return arr.at(-1);
+          }
+
+          static testType(obj, expectedOutput) {
+            let toStringOutput = Object.prototype.toString
+              .call(obj)
+              .match(/(?<=\[object ).*(?=\])/)[0];
+            console.assert(
+              toStringOutput === toStringOutput,
+              new TypeError(
+                `Tools.testType: Invalid input, expected ${expectedOutput}, got ${toStringOutput}.`
+              )
+            );
+          }
+
+          static getProto(obj, depth = 1) {
+            for (let i = 0; i < depth; i++) {
+              if (obj === null) break;
+              obj = Object.getPrototypeOf(obj);
+            }
+            return obj;
+          }
+          static repeatArray(arr, times) {
+            Tools.testType(arr, "Array");
+            let tmp = [];
+            tmp[times - 2] = undefined;
+            return Array.prototype.concat.apply(arr, tmp.fill(arr));
+          }
+          static logObj(obj) {
+            try {
+              return structuredClone(obj);
+            } catch (error) {
+              if (error instanceof DOMException) return obj;
+            }
+          }
+        }
+        window.Tools = Tools;
+      })();
+      (() => {
+        "use strict";
+        class Wheel {
+          constructor(itemList, delay = 5000) {
+            console.debug("Wheel.constructor: Wheel initialize.");
+            this.itemList = itemList;
+            this.labelDOM = document.createElement("div");
+            this.dom = document.createElement("div");
+            this.delay = delay;
+            this.outputIndex = 3;
+            this.status = -1;
+            // -1: stop
+            // Infinity: targeting
+            // >=0: running
+            this._onEnd = [];
+          }
+
+          start() {
+            if (!this.stopped) {
+              console.debug(
+                "Wheel.start: wheel hasn't stopped yet, start request rejected"
+              );
+              return false;
+            }
+            console.debug("Wheel.start: start.");
+            this.dom.classList.add("rolling");
+            this.status = Infinity;
+            this.turn();
+            return true;
+          }
+
+          turn(altThis = this) {
+            if (altThis.status === 0) {
+              altThis.end();
+              return --altThis.status;
+            }
+            let time;
+            if (altThis.status == Infinity)
+              if (
+                !altThis.target ||
+                altThis.targetIndexs.indexOf(altThis.outputIndex) !== -1
+              ) {
+                console.debug("Wheel.turn: targeting success.");
+                altThis.status = altThis.timeTable.length;
+                time = altThis.timeTable[--altThis.status];
+              } else time = Tools.arrayLast(altThis.timeTable);
+            else time = altThis.timeTable[--altThis.status];
+            let style = `--time:${time}ms;`;
+            console.debug("Wheel.turn: status:", Tools.logObj(altThis.status));
+            setTimeout(altThis.turn, time, altThis);
+            if (altThis.status === 0)
+              style += `--time-fun:cubic-bezier(0, 0, 0.2, 1);`;
+            // DOM operation is slow, so we need to put them in the end of functions;
+            altThis.dom.appendChild(altThis.dom.firstElementChild);
+            altThis.outputIndex++;
+            altThis.dom.style = style;
+            if (altThis.labelDOM) altThis.labelDOM.innerText = altThis.output;
+          }
+          end() {
+            if (this.dom.output.innerText !== this.target)
+              console.warn(
+                `Wheel.end: targeting failed! target:${this.target} output:${this.dom.output.innerText}`
+              );
+            else
+              console.debug(
+                `Wheel.end: check success. target:${this.target} output:${this.dom.output.innerText}`
+              );
+            this.syncList();
+            this.dom.classList.remove("rolling");
+            this.dom.style = "";
+            this._target = null;
+            for (let i = 0; i < this._onEnd.length; i++) this._onEnd[i]();
+          }
+          syncList() {
+            console.debug("Wheel.syncList: start.");
+            this._itemList = Array.from(this.dom.children).map(
+              (e) => e.innerText
+            ); // remember to prevent triggering DOM update
+            console.debug(
+              "Wheel.syncList: updating itemList (setter bypassed):",
+              this.itemList
+            );
+            this.outputIndex = 3;
+          }
+          initializeDOM(outer) {
+            outer.innerHTML = "";
+            this.itemList.forEach((item, index) => {
+              console.debug("Wheel.initializeDOM: initializing item", item);
+              let obj = new DOMParser().parseFromString(
+                `<div class="item">${item}</div>`,
+                "text/html"
+              ).body.children[0];
+              obj.addEventListener("mousedown", (e) => {
+                if (!e.target.parentElement.jsObj.stopped) {
+                  console.debug(
+                    "Wheel [item mousedown handler]: wheel hasn't stopped yet, overview request rejected"
+                  );
+                  return false;
+                }
+                e.target.parentElement.classList.add("overview");
+                Main.help.innerText = Main.msgDict.help.overview; // TODO: standardize this
+
+                //window.addEventListener("mousemove", this.syncDelta);
+                window.addEventListener("mousewheel", this.syncDelta);
+                /* TODO: debug this
+                window.addEventListener("mouseup", () => {
+                  window.removeEventListener("mousemove", this.syncDelta);
+                });
+                window.addEventListener("mouseleave", () => {
+                  window.removeEventListener("mousemove", this.syncDelta);
+                });*/
+              });
+              obj.addEventListener("mouseup", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              });
+              if (this.itemList.indexOf(item) !== index)
+                obj.classList.add("repeat");
+              outer.appendChild(obj);
+            });
+          }
+          syncDOM(chooseList) {
+            Array.from(this.dom.children).forEach((obj) => {
+              if (chooseList.indexOf(obj.innerText) === -1)
+                obj.classList.add("disabled");
+            });
+          }
+          syncDelta(e) {
+            let tmp;
+            if (e.deltaY) Main.wheel.dom.scrollTop += e.deltaY;
+            else Main.wheel.dom.scrollTop += e.movementY;
+            // TODO: standardize this
+          }
+          get onEnd() {
+            console.warn(
+              `Wheel.onEnd: get "Wheel.onEnd" won't return any value.`
+            );
+            return null;
+          }
+          set onEnd(callback) {
+            this._onEnd.push(callback);
+          }
+          get dom() {
+            return this._dom;
+          }
+          set dom(dom) {
+            console.debug("Wheel setter: initializing DOM:", Tools.logObj(dom));
+            Tools.testType(Tools.getProto(dom, 2), "HTMLElement");
+            this.initializeDOM(dom);
+            dom.classList.add("wheelOuter");
+            dom.jsObj = this;
+            if (!dom.output)
+              Object.defineProperty(dom, "output", {
+                get: () => {
+                  if (this.dom) return this.dom.children[3];
+                  else return this.children[3];
+                },
+                set: (output) => {
+                  if (this.dom) this.target = output;
+                  else this.jsObj.target = output;
+                  console.warn(
+                    `Wheel setter: Don't edit "Wheel.dom.output", use "Wheel.target" instead.`
+                  );
+                },
+              });
+            this._dom = dom;
+            this.labelDOM.innerText = "???";
+          }
+          get itemList() {
+            return this._itemList;
+          }
+          set itemList(list) {
+            Tools.testType(list, "Array");
+            list = list.map((e) => e.toString()).filter((e) => e !== "");
+
+            if (list.length < 7)
+              list = Tools.repeatArray(list, Math.ceil(7.0 / list.length));
+            console.debug(
+              "Wheel setter: updating itemList (with setter):",
+              Tools.logObj(list)
+            );
+            this._itemList = list;
+            this._target = null;
+            if (this.dom) this.initializeDOM(this.dom);
+          }
+
+          get delay() {
+            return this._delay;
+          }
+
+          set delay(delay) {
+            console.debug(
+              "Wheel setter: initializing timetable, delay =",
+              Tools.logObj(delay)
+            );
+            Tools.testType(delay, "Number");
+            this._delay = delay;
+
+            this.timeTable = [delay / 2.0];
+            delay /= 2.0;
+            while (Tools.arrayLast(this.timeTable) > 10) {
+              const time = delay / 4.0;
+              delay -= time;
+              this.timeTable.push(time);
+            }
+            for (let i = 0; i < 3; i++)
+              this.timeTable.push(Tools.arrayLast(this.timeTable));
+          }
+
+          get labelDOM() {
+            return this._labelDOM;
+          }
+          set labelDOM(label) {
+            Tools.testType(Tools.getProto(label, 2), "HTMLElement");
+            this._labelDOM = label;
+          }
+
+          get output() {
+            return this.itemList[this.outputIndex];
+          }
+          set output(output) {
+            this.target = output;
+            console.warn(
+              `Wheel setter: Don't edit "Wheel.output", use "Wheel.target" instead.`
+            );
+          }
+
+          get outputIndex() {
+            this._outputIndex %= this.itemList.length;
+            return this._outputIndex;
+          }
+          set outputIndex(index) {
+            this._outputIndex = index;
+          }
+
+          get target() {
+            return this._target;
+          }
+          set target(target) {
+            target += "";
+            let targetIndexs = [];
+            this.itemList.forEach((e, i) => {
+              if (e === target) {
+                let tmp = i - this.timeTable.length;
+                while (tmp < 0) tmp += this.itemList.length;
+                targetIndexs.push(tmp);
+              }
+            });
+            if (targetIndexs.length === 0)
+              throw new RangeError(
+                "Wheel setter: target should be a member of itemList"
+              );
+            else
+              console.debug(
+                `Wheel setter: syncing target index. target:${target}, index:`,
+                Tools.logObj(targetIndexs)
+              );
+            this.targetIndexs = targetIndexs;
+            this._target = target;
+          }
+
+          get stopped() {
+            return this.status === -1;
+          }
+          set stopped(data) {
+            console.warn(
+              `Wheel setter: Don't use implicit call to stop wheel object, use "Wheel.stop" instead.`
+            );
+          }
+        }
+        window.Wheel = Wheel;
+      })();
+      (() => {
+        class Chooser {
+          constructor(itemList) {
+            console.debug("Chooser.constructor: initialize");
+            this.chooseList = null;
+            this.itemList = itemList;
+            this._onReset = [];
+          }
+
+          choose() {
+            console.warn(
+              `Chooser getter: consider using getter "Chooser.next"?`
+            );
+            return this.next;
+          }
+          reset(auto = true) {
+            console.debug(`Chooser.reset: start`);
+            this.chooseList = this.itemList.slice(0);
+            if (auto)
+              for (let i = 0; i < this._onReset.length; i++) this._onReset[i]();
+            localStorage.removeItem("chooseList");
+          }
+
+          get onReset() {
+            console.warn(
+              `Chooser.onReset: get "Chooser.onReset" won't return any value.`
+            );
+            return null;
+          }
+          set onReset(callback) {
+            this._onReset.push(callback);
+          }
+          get itemList() {
+            return this._itemList;
+          }
+          set itemList(list) {
+            console.debug(
+              `Chooser setter: itemList initialize.`,
+              Tools.logObj(list)
+            );
+            Tools.testType(list, "Array");
+            if (this.chooseList !== null)
+              if (this.chooseList.length >= 0) {
+                console.warn(
+                  `Chooser setter: Data loss! "Chooser.chooseList" is not empty and will be overwritten, set "Chooser.chooseList" to null before setting new itemList to prevent this warning.`
+                );
+                localStorage.removeItem("chooseList");
+              }
+            this.chooseList = list.slice(0);
+            this._itemList = list.slice(0);
+          }
+
+          get next() {
+            if (this.chooseList.length === 0) this.reset();
+            const index = Math.floor(Math.random() * this.chooseList.length);
+            const out = this.chooseList[index];
+            this.chooseList.splice(index, 1);
+            console.debug("Chooser getter: output:", Tools.logObj(out));
+            if (!out)
+              console.warn(
+                "Chooser getter: output doesn't seem right! output:",
+                out
+              );
+            return out;
+          }
+          set next(next) {
+            throw new Error("Chooser setter: Nope.");
+          }
+        }
+        window.Chooser = Chooser;
+      })();
+    </script>
+    <script>
+      "use strict";
+      class Main {
+        // This is just a object filled with functions and data.
+        // so there is no constructor, but static functions only.
+        // BUT, initialize function still should be called first, as always been.
+        static initialize(itemList, delay) {
+          this.msgDict = {
+            help: {
+              init: "点击屏幕任意处以开始\n长按选项以浏览选项列表",
+              recover: "点击屏幕任意处以开始\n已还原上次使用时的转盘状态",
+              overview: "使用鼠标滚轮翻阅列表\n点击列表外区域以退出浏览",
+              run: "请等待转盘停止\n如转盘旋转耗时过长，可在设置页调整",
+              end: "点击任意处以开始\n选项不会重复出现，可使用右键重置",
+              reset: "已重置\n点击屏幕任意处以开始",
+              autoReset: "点击屏幕任意处以开始\n所有选项均已出现，已自动重置",
+            },
+          };
+          this.testItemList = [
+            "刘一",
+            "陈二",
+            "张三",
+            "李四",
+            "王五",
+            "赵六",
+            "孙七",
+            "周八",
+            "吴九",
+            "郑十",
+          ];
+          this.defaultDelay = 5000;
+          if (itemList === undefined) itemList = this.testItemList;
+          if (delay === undefined) delay = this.defaultDelay;
+
+          this.chooser = new Chooser(itemList);
+          this.chooser.onReset = () => Main.onReset();
+
+          this.wheel = new Wheel(itemList, delay);
+          this.wheel.onEnd = () => Main.onEnd();
+          this.wheel.dom.id = "wheelOuter";
+          this.wheel.labelDOM = document.getElementById("labelOuter");
+          this.wheel.syncDOM(this.chooser.chooseList);
+
+          this.help = document.getElementById("help");
+          this.count = document.getElementById("count");
+          this.help.innerText = this.msgDict.help.init;
+          this.count.innerText = this.chooser.chooseList.length;
+
+          this.locked = false;
+
+          document.body.insertBefore(this.wheel.dom, document.body.firstChild);
+          window.addEventListener("mouseup", (e) => {
+            switch (e.button) {
+              case 0:
+                if (this.wheel.dom.classList.contains("overview")) {
+                  this.wheel.dom.classList.remove("overview");
+                  Main.help.innerText = Main.msgDict.help.init;
+                } else Main.start();
+                break;
+              case 2:
+                Main.reset();
+                break;
+              case 1:
+                console.debug("mouse wheel pressed");
+                Main.start();
+                break;
+
+              default:
+                console.debug("unknown button pressed");
+            }
+          });
+          window.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          });
+        }
+
+        static start() {
+          if (this.locked) return;
+          if (!this.wheel.stopped) {
+            console.debug(
+              "Main.start: wheel hasn't stopped yet, start request rejected"
+            );
+            return false;
+          }
+          console.debug(
+            "--------- | Main.start: start main process | ---------"
+          );
+          Settings.buttons.open.classList.add("disabled");
+          Settings.mainPage.classList.add("disabled");
+          this.help.innerText = this.msgDict.help.run;
+          this.wheel.target = this.chooser.next;
+          return this.wheel.start();
+        }
+
+        static onReset() {
+          console.debug("Main.onReset: auto reset.");
+          this.resetUI();
+          this.help.innerText = this.msgDict.help.autoReset;
+        }
+
+        static onEnd() {
+          console.debug("Main.onEnd: end.");
+          this.help.innerText = this.msgDict.help.end;
+          if (this.chooser.chooseList.length === 0) this.reset(false);
+          this.wheel.syncDOM(this.chooser.chooseList);
+          this.count.innerText = this.chooser.chooseList.length;
+          Settings.buttons.open.classList.remove("disabled");
+          Settings.mainPage.classList.remove("disabled");
+        }
+
+        static reset(manual = true) {
+          if (!this.wheel.stopped) {
+            console.debug(
+              "Main.reset: wheel hasn't stopped yet, reset request rejected"
+            );
+            return false;
+          }
+          console.debug(`Main.reset: ${manual ? "manual" : "auto"} reset`);
+          if (manual) this.help.innerText = this.msgDict.help.reset;
+          else this.help.innerText = this.msgDict.help.autoReset;
+          this.chooser.reset(false);
+          this.resetUI();
+          return true;
+        }
+        static resetUI() {
+          Array.from(this.wheel.dom.children).forEach((e) =>
+            e.classList.remove("disabled")
+          );
+          this.count.innerText = this.chooser.chooseList.length;
+        }
+        static get itemList() {
+          return this._itemList;
+        }
+        static set itemList(list) {
+          this.chooser.chooseList = null;
+          this._itemList = this.chooser.itemList = this.wheel.itemList = list;
+        }
+      }
+      Main.initialize();
+    </script>
+    <script>
+      class Settings {
+        // This is just a object filled with functions and data.
+        // so there is no constructor, but static functions only.
+        // BUT, initialize function still should be called first, as always been.
+        static initialize() {
+          // constants
+
+          this.buttons = {
+            open: document.getElementById("setting-button"),
+            close: document.getElementById("setting-close"),
+            save: document.getElementById("setting-save"),
+            cancel: document.getElementById("setting-cancel"),
+            reset: document.getElementById("setting-reset"),
+            confirm: document.getElementById("setting-confirm"),
+            confirmCancel: document.getElementById("setting-confirm-cancel"),
+          };
+          this.inputs = {
+            wheelSpeed: document.getElementById("wheel-speed"),
+            itemList: document.getElementById("item-list"),
+          };
+          this.inputs.itemList.placeholder =
+            "例: 1,2 3.4\n" +
+            "将被识别为:'1','2','3','4'\n\n" +
+            "特殊规则：如不希望符号在识别时用于分割，可在符号后加星号(*)。\n" +
+            "所有的星号将在识别时移除，如需保留请输入两个星号。\n\n" +
+            "例1: Harry Potter,Star*,Ron Weasley,Hermione Granger\n" +
+            "将被识别为: 'Harry','Potter','Star','Ron'...\n\n" +
+            "例2: Harry *Potter,Star**,Ron *Weasley,Hermione *Granger\n" +
+            "将被识别为: 'Harry Potter','Star*','Ron Weasley'...\n\n" +
+            "注意，更改物品列表后将自动重置已出现物品列表";
+          this.settingConfirmMenu = document.getElementById(
+            "setting-confirm-menu"
+          );
+          this.wheelSpeedLabel = document.getElementById("wheel-speed-label");
+          this.mainPage = document.getElementById("setting");
+
+          // vars
+          this._confirmAction = null;
+
+          // handlers
+          this.buttons.open.addEventListener("mouseup", (e) => {
+            Main.locked = true;
+            e.preventDefault();
+            e.stopPropagation();
+            Settings.mainPage.classList.add("active");
+          });
+          this.buttons.close.addEventListener("mouseup", () => {
+            Main.locked = false;
+            Settings.mainPage.classList.remove("active");
+          });
+          this.buttons.save.addEventListener("mouseup", () => Settings.save());
+          this.buttons.cancel.addEventListener("mouseup", () => {
+            Settings.confirmAction = Settings.cancel;
+          });
+          this.buttons.reset.addEventListener("mouseup", () => {
+            Settings.confirmAction = Settings.reset;
+          });
+          this.buttons.confirm.addEventListener("mouseup", () => {
+            Settings.confirmAction();
+          });
+          this.buttons.confirmCancel.addEventListener("mouseup", () => {
+            Settings.confirmAction;
+          });
+          this.mainPage.addEventListener("mouseup", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          });
+          this.inputs.wheelSpeed.addEventListener("input", (e) => {
+            Settings.wheelSpeedLabel.innerText =
+              Settings.inputs.wheelSpeed.value;
+          });
+
+          // localStorage initialization
+          if (!localStorage.itemList)
+            localStorage.itemList = JSON.stringify(Main.testItemList);
+          if (!localStorage.delay)
+            localStorage.delay = JSON.stringify(Main.defaultDelay);
+          this.cancel(); // read from localStorage
+          this.save(); // apply
+          let tmp = JSON.parse(localStorage.chooseList);
+          if (!tmp.every((e,i) => Main.chooser.itemList[i] === e)) {
+            console.debug(
+              "Settings.initialize: recovered chooseList",
+              Tools.logObj(tmp)
+            );
+            Main.chooser.chooseList = tmp;
+            Main.help.innerText = Main.msgDict.help.recover;
+            Main.wheel.syncDOM(tmp);
+          }
+          window.addEventListener("unload", () => {
+            localStorage.chooseList = JSON.stringify(Main.chooser.chooseList);
+          });
+        }
+        static save() {
+          Main.wheel.delay = Settings.inputs.wheelSpeed.value * 1000;
+          localStorage.delay = JSON.stringify(Main.wheel.delay);
+          if (Settings.inputs.itemList.value) {
+            Main.itemList = Settings.inputs.itemList.value
+              .split(/[,，.。;；\s](?!\*(?!\*))/g) // 分割
+              .map((e) => e.replace(/\*(?!\*)/, "").replace("**", "*")) // 去星号
+              .filter((e) => e !== "") // 去空值
+              .filter((e, i, a) => a.indexOf(e) === i); // 去重
+            // ↑ "1,2，,,,,,,,,3 *4 **5 1 1 1 1 1" ->  ['1', '2', '3 4', '*5']
+            localStorage.itemList = JSON.stringify(Main.itemList);
+            Main.count.innerText = Main.chooser.chooseList.length;
+          }
+        }
+        static reset() {
+          Settings.inputs.wheelSpeed.value = Main.defaultDelay / 1000;
+          Settings.inputs.itemList.value = Main.testItemList.join(",");
+          Settings.save();
+        }
+        static cancel() {
+          Settings.inputs.wheelSpeed.value =
+            JSON.parse(localStorage.delay) / 1000;
+          Settings.inputs.itemList.value = JSON.parse(
+            localStorage.itemList
+          ).join(",");
+        }
+        static get confirmAction() {
+          console.debug("Settings getter: confirmAction get");
+          this.settingConfirmMenu.classList.remove("focus", "active");
+          const tmp = this._confirmAction;
+          this._confirmAction = null;
+          return tmp;
+        }
+        static set confirmAction(action) {
+          console.debug("Settings setter: confirmAction set");
+          this._confirmAction = action;
+          if (this.settingConfirmMenu.classList.contains("active"))
+            this.settingConfirmMenu.classList.add("focus");
+          else this.settingConfirmMenu.classList.add("active");
+        }
+      }
+      Settings.initialize();
+    </script>
+  </body>
+</html>
