@@ -1,0 +1,395 @@
+body {
+  color: #fff;
+  background-color: #222;
+  --time: 0.5s;
+  --time-fun: ease;
+  --mult: 1;
+  --delta: 0deg;
+  -webkit-user-select: none;
+  user-select: none;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+#setting-button {
+  padding: 0.125em;
+  border-radius: 0.25em;
+  font-size: max(0.75em, 2.5vmin);
+  flex: none;
+  transition: 250ms;
+  color: #aaa;
+}
+
+#setting-button::after {
+  border-left: 0.5em solid #aaa;
+  transition: 250ms;
+}
+
+#setting-button:hover {
+  transform: translate(6.25%, 0);
+  color: #ddd;
+}
+
+#setting-button:hover::after {
+  border-left: 0.5em solid #ddd;
+}
+
+#setting-button:active {
+  transform: translate(12.5%, 0);
+  color: #fff;
+}
+
+#setting-button:active::after {
+  border-left: 0.5em solid #fff;
+}
+
+#setting-button.disabled {
+  transform: translate(-12.5%, 0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#setting {
+  padding: 1em;
+  width: calc(100vw - 2em);
+  height: calc(100vh - 2em);
+  background-color: #222e;
+  position: fixed;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  transform: translate(-25%, 0);
+  pointer-events: none;
+  opacity: 0;
+  transition: 250ms;
+}
+
+#setting.disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#setting.active {
+  pointer-events: initial;
+  transform: none;
+  opacity: 1;
+}
+
+#setting label,
+#setting input,
+#setting .input,
+#setting textarea {
+  display: block;
+  margin: 0.25em;
+}
+
+#setting label {
+  margin-top: 1.5em;
+}
+
+#setting .input.button,
+#setting input[type="button"],
+#setting textarea {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  padding: 0.5em 0.75em;
+  min-width: 4em;
+  margin: 0 0.5em;
+  transition: 250ms;
+  border-radius: 0.5em;
+  display: flex;
+  justify-content: center;
+}
+#setting .buttons .buttons .input.button{
+  min-width: initial;
+}
+
+#setting .input.button .value {
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: margin-left 250ms;
+}
+
+#setting .input.button:hover,
+#setting input[type="button"]:hover {
+  background-color: #fff6;
+}
+
+#setting .input.button:hover .value {
+  width: initial;
+  margin-left: 0.25em;
+}
+
+#setting .input.button.warn:hover,
+#setting input[type="button"].warn:hover {
+  background-color: #e74c3c66;
+}
+
+#setting .input.button:active,
+#setting input[type="button"]:active {
+  background-color: #fff8;
+}
+
+#setting .input.button.warn:active,
+#setting input[type="button"].warn:active {
+  background-color: #e74c3c88;
+}
+
+#setting textarea {
+  flex: 1;
+  padding: 1em;
+  border-radius: 1em;
+  margin-top: 0.5em;
+  font-family: sans-serif;
+  resize: none;
+  outline: #fff4 0.125em solid;
+}
+
+#setting textarea::placeholder {
+  color: #ccc;
+}
+
+.buttons {
+  margin-top: 0.5em;
+  display: flex;
+  justify-content: flex-start;
+  line-height: 100%;
+  align-items: center;
+}
+
+#setting>.buttons {
+  justify-content: space-around;
+}
+
+.buttons .buttons,
+.buttons.sub {
+  margin: 0 0.5em;
+  opacity: 0;
+  position: absolute;
+  transform: translate(0, -25%);
+  z-index: -1;
+  transition: 250ms;
+  border-radius: 0.5em;
+  padding-left: 0.5em;
+  pointer-events: none;
+  bottom: 4em;
+}
+
+.buttons .buttons.active,
+.buttons.sub.active {
+  pointer-events: initial;
+  z-index: 2;
+  opacity: 1;
+  transform: none;
+}
+
+.buttons .buttons.active.focus,
+.buttons.sub.active.focus {
+  animation: outline 1s both;
+}
+
+@keyframes outline {
+
+  0%,
+  100% {
+    outline: 0 solid #fff;
+  }
+
+  33%,
+  66% {
+    outline: 0.125em solid #fff;
+  }
+}
+
+@supports (backdrop-filter: blur(1em)) {
+  #setting {
+    background-color: #2224;
+    backdrop-filter: blur(1em);
+  }
+}
+
+#msgbar {
+  font-size: 3vw;
+  position: fixed;
+  left: 0.5em;
+  bottom: 0.5em;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#count::before {
+  content: "剩余";
+}
+
+#count::after {
+  content: "个选项";
+}
+
+.wheelOuter.overview {
+  position: absolute;
+  transform: translate(0, -50%);
+  top: 50vh;
+  max-height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.wheelOuter.overview::before,
+.wheelOuter.overview::after {
+  display: block;
+  content: "";
+  height: 5vw;
+}
+
+.overview~#labelOuter {
+  transform: translate(-25%, -50%);
+  opacity: 0;
+}
+
+html .wheelOuter.overview>div {
+  position: static;
+  transform: translate(75vw, 0);
+  opacity: 1;
+  margin: 0.25em;
+  padding: 0;
+  transition: 0.5s;
+  font-size: 5vw;
+  width: 20vw;
+  background-color: transparent;
+}
+
+html .wheelOuter.overview>div.repeat {
+  opacity: 0;
+  position: absolute;
+}
+
+html .wheelOuter.overview>div.disabled {
+  background-color: #fff;
+}
+
+.wheelOuter.rolling {
+  --time-fun: linear;
+}
+
+.wheelOuter>div {
+  --count: 6;
+  --scale: 1;
+  position: fixed;
+  left: 0;
+  top: 50vh;
+  transform: rotate(calc(var(--count) * 22.5deg - 45deg)) translate(75vw, -50%) scale(var(--scale));
+  opacity: 0;
+  font-size: 7.5vw;
+  width: 25vw;
+  text-align: center;
+  transition: transform var(--time) var(--time-fun), opacity var(--time),
+    background-color 0.5s, color 0.5s;
+  padding-bottom: 0.125em;
+  margin-top: 0.125em;
+  border-radius: 0.25em;
+}
+
+.wheelOuter>div:hover {
+  background-color: #fff4;
+  --scale: 1.0625;
+}
+
+.wheelOuter.rolling>div {
+  background-color: transparent;
+  --scale: 1;
+}
+
+.wheelOuter>div.disabled {
+  text-decoration: line-through;
+  background-color: #fff;
+  color: #000;
+}
+
+.wheelOuter>div:nth-child(1) {
+  --count: -1;
+  opacity: 0;
+}
+
+.wheelOuter>div:nth-child(2) {
+  --count: 0;
+  opacity: calc(1 / 3);
+}
+
+.wheelOuter>div:nth-child(3) {
+  --count: 1;
+  opacity: calc(2 / 3);
+}
+
+.wheelOuter>div:nth-child(4) {
+  --count: 2;
+  opacity: 1;
+}
+
+.wheelOuter>div:nth-child(5) {
+  --count: 3;
+  opacity: calc(2 / 3);
+}
+
+.wheelOuter>div:nth-child(6) {
+  --count: 4;
+  opacity: calc(1 / 3);
+}
+
+.wheelOuter>div:nth-child(7) {
+  --count: 5;
+  opacity: 0;
+}
+
+#labelOuter {
+  position: fixed;
+  right: 30vw;
+  top: 50vh;
+  transform: translate(0, -50%);
+  font-size: 10vw;
+  transition: transform 0.5s, opacity 0.5s;
+}
+
+#labelOuter.triangle::after {
+  margin-left: 5vw;
+  transform: scale(0.25);
+}
+
+.triangle {
+  display: flex;
+  align-items: center;
+}
+
+.triangle::after {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border: 0.5em solid transparent;
+  border-left: 0.5em solid #fff;
+  margin-top: 0.15em;
+  margin-left: 0.25em;
+  transform: scale(0.75);
+}
+
+datalist {
+  display: flex;
+  justify-content: space-between;
+}
+
+option {
+  padding: 0;
+}
+
+#wheel-speed-label::before {
+  content: "转盘动画时长：";
+}
+
+#wheel-speed-label::after {
+  content: "秒";
+}
