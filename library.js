@@ -14,12 +14,7 @@
       let toStringOutput = Object.prototype.toString
         .call(obj)
         .match(/(?<=\[object ).*(?=\])/)[0];
-      console.assert(
-        toStringOutput === toStringOutput,
-        new TypeError(
-          `Tools.testType: Invalid input, expected ${expectedOutput}, got ${toStringOutput}.`
-        )
-      );
+      return toStringOutput === expectedOutput;
     }
 
     static getProto(obj, depth = 1) {
@@ -98,13 +93,18 @@
       let style = `--time:${time}ms;`;
       console.debug("Wheel.turn: status:", Tools.logObj(altThis.status));
       setTimeout(altThis.turn, time, altThis);
-      if (altThis.status === 0)
-        style += `--time-fun:cubic-bezier(0, 0, 0.2, 1);`;
+      let tmp = time / 2 - 100;
+      if (altThis.status === 0) {
+        style += `--time-fun: cubic-bezier(0, 0, 0.2, 1);--delta: ${Math.random() * 22.5 - 11.25}deg;`;
+        tmp /= 3;
+      }
+      setTimeout((altThis) => {
+        altThis.labelDOM.innerText = altThis.output;
+      }, tmp, altThis);
       // DOM operation is slow, so we need to put them in the end of functions;
       altThis.dom.appendChild(altThis.dom.firstElementChild);
       altThis.outputIndex++;
       altThis.dom.style = style;
-      if (altThis.labelDOM) altThis.labelDOM.innerText = altThis.output;
     }
     end() {
       if (this.dom.output.innerText !== this.target)
@@ -117,7 +117,7 @@
         );
       this.syncList();
       this.dom.classList.remove("rolling");
-      this.dom.style = "";
+      this.dom.style = this.dom.style.cssText.replace("--time-fun: cubic-bezier(0, 0, 0.2, 1);","");
       this._target = null;
       for (let i = 0; i < this._onEnd.length; i++) this._onEnd[i]();
     }
@@ -141,31 +141,36 @@
           "text/html"
         ).body.children[0];
         obj.addEventListener("mousedown", (e) => {
+          Main.clickLock = true;
           if (!e.target.parentElement.jsObj.stopped) {
             console.debug(
               "Wheel [item mousedown handler]: wheel hasn't stopped yet, overview request rejected"
             );
             return false;
           }
-          Main.clickLock = true;
-          e.target.parentElement.classList.add("overview");
-          Main.help.innerText = Main.msgDict.help.overview; // TODO: standardize this
           this.controller = new AbortController();
           const signal = this.controller.signal;
+          console.debug(
+            "Wheel [item mousedown handler]: enabled dragging"
+          );
           window.addEventListener("mousemove", this.syncDelta, {
             signal: signal,
           });
+          if (e.target.parentElement.classList.contains("overview")) {
+            console.debug(
+              "Wheel [item mousedown handler]: duplicate overview request rejected"
+            );
+            return false;
+          }
+          e.target.parentElement.scrollTop = 0;
+          e.target.parentElement.classList.add("overview");
+          Main.help.innerText = Main.msgDict.help.overview;
           window.addEventListener("mouseup", () => {
+            console.debug(
+              "Wheel [item mousedown handler]: disabled dragging"
+            );
             Main.wheel.controller.abort();
           });
-          window.addEventListener("mouseleave", () => {
-            Main.wheel.controller.abort();
-          });
-        });
-        obj.addEventListener("mouseup", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          Main.wheel.controller.abort();
         });
         if (this.itemList.indexOf(item) !== index)
           obj.classList.add("repeat");

@@ -16,6 +16,9 @@
       无论如何，祝你顺利完成你想做的事。
     -->
     <div id="labelOuter" class="triangle">???</div>
+
+    <div id="bgmask"></div>
+    <div id="bg"></div>
     <div id="infoOuter"></div>
     <div id="msgbar">
       <div id="setting-button" class="triangle">设置</div>
@@ -49,6 +52,10 @@
         placeholder=""
         resizeable="false"
       ></textarea>
+      <div id="clipboard-tip" class="input button tip">
+        <i class="fa-solid fa-clipboard-check"></i>
+        已导出至剪贴板!
+      </div>
       <div class="buttons">
         <div id="setting-close" class="input button">
           <i class="fa-solid fa-xmark"></i>
@@ -65,6 +72,14 @@
         <div id="setting-reset" class="input button warn">
           <i class="fa-regular fa-trash-can"></i>
           <span class="value">重置</span>
+        </div>
+        <div id="setting-reset" class="input button">
+          <i class="fa-solid fa-arrow-right-to-bracket download"></i>
+          <span class="value">导入</span>
+        </div>
+        <div id="setting-reset" class="input button">
+          <i class="fa-solid fa-arrow-right-from-bracket upload"></i>
+          <span class="value">导出</span>
         </div>
         <div class="buttons sub" id="setting-confirm-menu">
           确定要这么做？
@@ -91,5 +106,14 @@
         "font-family: sans-serif;margin:0;"
       );
     </script>
+    <style>
+      /* font Awesome Hack */
+      .fa-arrow-right-to-bracket.download {
+        transform: rotate(90deg);
+      }
+      .fa-arrow-right-from-bracket.upload {
+        transform: rotate(-90deg);
+      }
+    </style>
   </body>
 </html>

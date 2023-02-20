@@ -1,6 +1,8 @@
 body {
   color: #fff;
   background-color: #222;
+  width: 100vw;
+  height: 100vh;
   --time: 0.5s;
   --time-fun: ease;
   --mult: 1;
@@ -11,6 +13,10 @@ body {
   padding: 0;
   margin: 0;
   font-family: sans-serif;
+}
+
+* {
+  z-index: 3;
 }
 
 #setting-button {
@@ -103,8 +109,29 @@ body {
   border-radius: 0.5em;
   display: flex;
   justify-content: center;
+  align-items: center;
+  white-space: nowrap;
 }
-#setting .buttons .buttons .input.button{
+
+#setting .input.button.tip i,
+#setting .input.button.tip svg {
+  margin-right: 0.5em;
+}
+
+#setting .input.button.tip {
+  padding: 0.5em 1em;
+  background-color: #fff6;
+  position: absolute;
+  left: 50vw;
+  transform: translate(-50%, calc(-100% - 2em));
+  top: 2em;
+}
+
+#setting .input.button.tip.active {
+  transform: translate(-50%, 0);
+}
+
+#setting .buttons .buttons .input.button {
   min-width: initial;
 }
 
@@ -206,13 +233,6 @@ body {
   }
 }
 
-@supports (backdrop-filter: blur(1em)) {
-  #setting {
-    background-color: #2224;
-    backdrop-filter: blur(1em);
-  }
-}
-
 #msgbar {
   font-size: 3vw;
   position: fixed;
@@ -283,7 +303,7 @@ html .wheelOuter.overview>div.disabled {
   position: fixed;
   left: 0;
   top: 50vh;
-  transform: rotate(calc(var(--count) * 22.5deg - 45deg)) translate(75vw, -50%) scale(var(--scale));
+  transform: rotate(calc(var(--count) * 22.5deg - 45deg + var(--delta))) translate(70vw, -50%) scale(var(--scale));
   opacity: 0;
   font-size: 7.5vw;
   width: 25vw;
@@ -348,7 +368,7 @@ html .wheelOuter.overview>div.disabled {
 
 #labelOuter {
   position: fixed;
-  right: 30vw;
+  right: 32.5vw;
   top: 50vh;
   transform: translate(0, -50%);
   font-size: 10vw;
@@ -356,7 +376,7 @@ html .wheelOuter.overview>div.disabled {
 }
 
 #labelOuter.triangle::after {
-  margin-left: 5vw;
+  margin-left: 2.5vw;
   transform: scale(0.25);
 }
 
@@ -392,4 +412,30 @@ option {
 
 #wheel-speed-label::after {
   content: "秒";
+}
+
+#bgmask {
+  background-color: #000;
+  position: fixed;
+  opacity: 0.8;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2;
+}
+
+#bg {
+  background: center / cover no-repeat url("./bg.jpg");
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  filter: blur(1em);
+}
+
+@supports (backdrop-filter: blur(1em)) or (-webkit-backdrop-filter: blur(1em)) {
+  #setting {
+    background-color: #2224;
+    -webkit-backdrop-filter: blur(1em);
+    backdrop-filter: blur(1em);
+  }
 }

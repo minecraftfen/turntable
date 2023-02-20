@@ -55,18 +55,25 @@ class Main {
     this.count.innerText = this.chooser.chooseList.length;
 
     this.locked = false;
-    this.clickLock = true;
+    this.clickLock = false;
 
     document.body.insertBefore(this.wheel.dom, document.body.firstChild);
     window.addEventListener("mouseup", (e) => {
       switch (e.button) {
         case 0:
           if (this.clickLock) {
+            console.debug(
+              "Main [window mouseup handler]: request rejected by clickLock"
+            );
             this.clickLock = false;
             return;
           }
           if (this.wheel.dom.classList.contains("overview")) {
+            console.debug(
+              "Main [window mouseup handler]: request rejected by exiting overview mode"
+            );
             this.wheel.dom.classList.remove("overview");
+            Main.wheel.dom.scrollTop = 0;
             Main.help.innerText = Main.msgDict.help.init;
           } else Main.start();
           break;
@@ -239,6 +246,7 @@ class Settings {
         Main.chooser.chooseList = tmp;
         Main.help.innerText = Main.msgDict.help.recover;
         Main.wheel.syncDOM(tmp);
+        Main.count.innerText = Main.chooser.chooseList.length;
       }
     }
     window.addEventListener("unload", () => {
@@ -294,11 +302,26 @@ function dataExport() {
     chooseList: tmp.chooseList,
     delay: tmp.delay,
   };
-  return JSON.stringify(tmp);
+  return navigator.clipboard.writeText(JSON.stringify(tmp));
 }
-function dataImport(json) {
-  let tmp = JSON.parse(json);
-  localStorage.itemList = tmp.itemList;
-  localStorage.chooseList = tmp.chooseList;
-  localStorage.delay = tmp.delay;
+
+async function dataImport() {
+  let tmp;
+  try {
+    tmp = JSON.parse(await navigator.clipboard.readText());
+    if (
+      Tools.testType(JSON.parse(tmp.itemList), 'Array') &&
+      Tools.testType(JSON.parse(tmp.chooseList), 'Array') &&
+      Tools.testType(JSON.parse(tmp.delay), 'Number')) {
+      localStorage.itemList = tmp.itemList;
+      localStorage.chooseList = tmp.chooseList;
+      localStorage.delay = tmp.delay;
+    } else throw new SyntaxError();
+  } catch (e) {
+    if (e instanceof SyntaxError) console.log('dataImport: Error parsing JSON.');
+    return false;
+  }
+
+
+  return true;
 }
