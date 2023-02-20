@@ -371,7 +371,7 @@
     </style>
   </head>
   <body>
-<!-- 调试页面
+    <!-- 调试页面
 如果你是意外打开这个页面的，不用惊慌，在下一个意外发生前关掉这个页面即可。
 如果你想提交调试信息，那么请严格按照引导操作，这里毕竟还是有些危险的。
 无论如何，祝你顺利完成你想做的事
@@ -1052,15 +1052,17 @@
             localStorage.delay = JSON.stringify(Main.defaultDelay);
           this.cancel(); // read from localStorage
           this.save(); // apply
-          let tmp = JSON.parse(localStorage.chooseList);
-          if (!tmp.every((e,i) => Main.chooser.itemList[i] === e)) {
-            console.debug(
-              "Settings.initialize: recovered chooseList",
-              Tools.logObj(tmp)
-            );
-            Main.chooser.chooseList = tmp;
-            Main.help.innerText = Main.msgDict.help.recover;
-            Main.wheel.syncDOM(tmp);
+          if (localStorage.chooseList) {
+            let tmp = JSON.parse(localStorage.chooseList);
+            if (!tmp.every((e, i) => Main.chooser.itemList[i] === e)) {
+              console.debug(
+                "Settings.initialize: recovered chooseList",
+                Tools.logObj(tmp)
+              );
+              Main.chooser.chooseList = tmp;
+              Main.help.innerText = Main.msgDict.help.recover;
+              Main.wheel.syncDOM(tmp);
+            }
           }
           window.addEventListener("unload", () => {
             localStorage.chooseList = JSON.stringify(Main.chooser.chooseList);
