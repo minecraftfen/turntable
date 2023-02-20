@@ -502,6 +502,9 @@
             // Infinity: targeting
             // >=0: running
             this._onEnd = [];
+            window.addEventListener("mousewheel", this.syncDelta, {
+              passive: true,
+            });
           }
 
           start() {
@@ -586,22 +589,25 @@
                   );
                   return false;
                 }
+                Main.clickLock = true;
                 e.target.parentElement.classList.add("overview");
                 Main.help.innerText = Main.msgDict.help.overview; // TODO: standardize this
-
-                //window.addEventListener("mousemove", this.syncDelta);
-                window.addEventListener("mousewheel", this.syncDelta);
-                /* TODO: debug this
+                this.controller = new AbortController();
+                const signal = this.controller.signal;
+                window.addEventListener("mousemove", this.syncDelta, {
+                  signal: signal,
+                });
                 window.addEventListener("mouseup", () => {
-                  window.removeEventListener("mousemove", this.syncDelta);
+                  Main.wheel.controller.abort();
                 });
                 window.addEventListener("mouseleave", () => {
-                  window.removeEventListener("mousemove", this.syncDelta);
-                });*/
+                  Main.wheel.controller.abort();
+                });
               });
               obj.addEventListener("mouseup", (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                Main.wheel.controller.abort();
               });
               if (this.itemList.indexOf(item) !== index)
                 obj.classList.add("repeat");
@@ -617,7 +623,7 @@
           syncDelta(e) {
             let tmp;
             if (e.deltaY) Main.wheel.dom.scrollTop += e.deltaY;
-            else Main.wheel.dom.scrollTop += e.movementY;
+            else Main.wheel.dom.scrollTop -= e.movementY;
             // TODO: standardize this
           }
           get onEnd() {
@@ -840,9 +846,10 @@
         static initialize(itemList, delay) {
           this.msgDict = {
             help: {
-              init: "点击屏幕任意处以开始\n长按选项以浏览选项列表",
+              init: "点击屏幕任意处以开始\n点击选项以浏览选项列表",
               recover: "点击屏幕任意处以开始\n已还原上次使用时的转盘状态",
-              overview: "使用鼠标滚轮翻阅列表\n点击列表外区域以退出浏览",
+              overview:
+                "使用鼠标滚轮或拖动以翻阅列表\n点击列表外区域以退出浏览",
               run: "请等待转盘停止\n如转盘旋转耗时过长，可在设置页调整",
               end: "点击任意处以开始\n选项不会重复出现，可使用右键重置",
               reset: "已重置\n点击屏幕任意处以开始",
@@ -880,11 +887,16 @@
           this.count.innerText = this.chooser.chooseList.length;
 
           this.locked = false;
+          this.clickLock = true;
 
           document.body.insertBefore(this.wheel.dom, document.body.firstChild);
           window.addEventListener("mouseup", (e) => {
             switch (e.button) {
               case 0:
+                if (this.clickLock) {
+                  this.clickLock = false;
+                  return;
+                }
                 if (this.wheel.dom.classList.contains("overview")) {
                   this.wheel.dom.classList.remove("overview");
                   Main.help.innerText = Main.msgDict.help.init;
