@@ -5,11 +5,11 @@ class Main {
   // BUT, initialize function still should be called first, as always been.
   static initialize(itemList, delay) {
     console.log(
-      "\n%cRandom Wheel\n%c%s\n%cBy Ivor%c\n\n",
+      "\n%cIvor's Wheel\n%c%s\n%cMade With ♥ By Ivor%c\n\n",
       "color: #888; font-size: 2em;",
       "color: #666; font-size: 1.5em;",
-      "v0.3.1-beta",
-      "color: #000;font-size: 0.75em;padding:0.125em 0.5em;margin:0.5em;background-color: #fff;border-radius:0.125em;",
+      window.VERSION,
+      "color: #000;font-size: 0.75em;padding:0.125em 0.75em;margin:0.5em;background-color: #fff;border-radius:0.125em;",
       ""
     );
     this.msgDict = {
@@ -103,9 +103,11 @@ class Main {
       );
       return false;
     }
+    console.groupCollapsed();
     console.debug(
       "--------- | Main.start: start main process | ---------"
     );
+    console.count("Number of times Main.start function has been successfully called:");
     Settings.buttons.open.classList.add("disabled");
     Settings.mainPage.classList.add("disabled");
     this.help.innerText = this.msgDict.help.run;
@@ -121,6 +123,7 @@ class Main {
 
   static onEnd() {
     console.debug("Main.onEnd: end.");
+    console.groupEnd();
     this.help.innerText = this.msgDict.help.end;
     if (this.chooser.chooseList.length === 0) this.reset(false);
     this.wheel.syncDOM(this.chooser.chooseList);

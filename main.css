@@ -184,6 +184,7 @@ body {
 .buttons {
   margin-top: 0.5em;
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-start;
   line-height: 100%;
   align-items: center;
@@ -293,31 +294,62 @@ html .wheelOuter.overview>div.disabled {
   background-color: #fff;
 }
 
-.wheelOuter.rolling {
-  --time-fun: linear;
-}
-
 .wheelOuter>div {
   --count: 6;
   --scale: 1;
+  --item-gap-angle: 22.5deg;
+  --wheel-width: 80vw;
+  --item-width: 25vw;
   position: fixed;
   left: 0;
   top: 50vh;
-  transform: rotate(calc(var(--count) * 22.5deg - 45deg + var(--delta))) translate(70vw, -50%) scale(var(--scale));
+  transform: translate(-50%, -50%) rotate(calc(var(--count) * 22.5deg - 45deg + var(--delta))) translate(80vw, 0) scale(var(--scale));
+
   opacity: 0;
   font-size: 7.5vw;
-  width: 25vw;
+  width: var(--item-width);
   text-align: center;
-  transition: transform var(--time) var(--time-fun), opacity var(--time),
-    background-color 0.5s, color 0.5s;
+  transition: transform 0.5s, opacity 250ms,
+    background-color 250ms, color 250ms, outline-width 250ms, text-shadow 250ms;
   padding-bottom: 0.125em;
   margin-top: 0.125em;
   border-radius: 0.25em;
+  outline: #fff 0em solid;
+  outline-offset: -0.0625em;
+}
+
+.wheelOuter>div.selected {
+  text-shadow: #fff 0 0 0.25em;
+}
+.wheelOuter.rolling>div {
+  transition: transform var(--time) var(--time-fun), opacity var(--time),
+    background-color 250ms, color 250ms, outline-width 250ms, text-shadow 250ms;
+}
+
+.wheelOuter.split>div.item::after {
+  display: block;
+  content: "";
+  position: fixed;
+  left: calc((var(--wheel-width) - var(--item-width) / 2) * -1);
+  transform-origin: 0 50%;
+  transform: rotate(calc(var(--item-gap-angle) / 2));
+  top: 50%;
+  width: 95vw;
+  height: 1px;
+  background-image: linear-gradient(0.25turn, #fff0 75%, #ffff 75%);
+
+}
+
+.wheelOuter.overview>div.item::after {
+  opacity: 0;
 }
 
 .wheelOuter>div:hover {
   background-color: #fff4;
-  --scale: 1.0625;
+}
+
+.wheelOuter>div.disabled:hover {
+  outline: #fff 0.125em solid;
 }
 
 .wheelOuter.rolling>div {

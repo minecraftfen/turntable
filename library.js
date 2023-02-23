@@ -1,14 +1,12 @@
-/** TODO:
- * initialize all parameters in constructors
- * add weight feature to Chooser class
- * warning msg dict
- */
 (() => {
   class Tools {
+    /*
     static arrayLast(arr) {
-      Tools.testType(arr, "Array");
+      if(!Tools.testType(arr, "Array")) throw new TypeError("Tools.arrayLast: invalid argument type: expected Array, got " + typeof arr);
       return arr.at(-1);
+      // This function is deprecated
     }
+    */
 
     static testType(obj, expectedOutput) {
       let toStringOutput = Object.prototype.toString
@@ -25,7 +23,7 @@
       return obj;
     }
     static repeatArray(arr, times) {
-      Tools.testType(arr, "Array");
+      if (!Tools.testType(arr, "Array")) throw new TypeError("Tools.repeatArray: invalid argument type: expected Array, got " + typeof arr);
       let tmp = [];
       tmp[times - 2] = undefined;
       return Array.prototype.concat.apply(arr, tmp.fill(arr));
@@ -88,7 +86,7 @@
           console.debug("Wheel.turn: targeting success.");
           altThis.status = altThis.timeTable.length;
           time = altThis.timeTable[--altThis.status];
-        } else time = Tools.arrayLast(altThis.timeTable);
+        } else time = altThis.timeTable.at(-1);
       else time = altThis.timeTable[--altThis.status];
       let style = `--time:${time}ms;`;
       console.debug("Wheel.turn: status:", Tools.logObj(altThis.status));
@@ -103,6 +101,10 @@
       }, tmp, altThis);
       // DOM operation is slow, so we need to put them in the end of functions;
       altThis.dom.appendChild(altThis.dom.firstElementChild);
+      /*
+      altThis.dom.children[2].classList.remove("selected");
+      altThis.dom.output.classList.add("selected");
+      */
       altThis.outputIndex++;
       altThis.dom.style = style;
     }
@@ -117,7 +119,8 @@
         );
       this.syncList();
       this.dom.classList.remove("rolling");
-      this.dom.style = this.dom.style.cssText.replace("--time-fun: cubic-bezier(0, 0, 0.2, 1);","");
+      //this.dom.output.classList.remove("selected");
+      this.dom.style = this.dom.style.cssText.replace("--time-fun: cubic-bezier(0, 0, 0.2, 1);", "");
       this._target = null;
       for (let i = 0; i < this._onEnd.length; i++) this._onEnd[i]();
     }
@@ -203,7 +206,7 @@
     }
     set dom(dom) {
       console.debug("Wheel setter: initializing DOM:", Tools.logObj(dom));
-      Tools.testType(Tools.getProto(dom, 2), "HTMLElement");
+      if (!Tools.testType(Tools.getProto(dom, 2), "HTMLElement")) throw new TypeError("Wheel setter: invalid argument type: expected HTMLElement, got " + typeof dom);
       this.initializeDOM(dom);
       dom.classList.add("wheelOuter");
       dom.jsObj = this;
@@ -228,7 +231,7 @@
       return this._itemList;
     }
     set itemList(list) {
-      Tools.testType(list, "Array");
+      if (!Tools.testType(list, "Array")) throw new TypeError("Wheel.itemList: invalid argument type: expected Array, got " + typeof list);
       list = list.map((e) => e.toString()).filter((e) => e !== "");
 
       if (list.length < 7)
@@ -251,25 +254,25 @@
         "Wheel setter: initializing timetable, delay =",
         Tools.logObj(delay)
       );
-      Tools.testType(delay, "Number");
+      if (!Tools.testType(delay, "Number")) throw new TypeError("Wheel.delay: invalid argument type: expected Number, got " + typeof delay);
       this._delay = delay;
 
       this.timeTable = [delay / 2.0];
       delay /= 2.0;
-      while (Tools.arrayLast(this.timeTable) > 10) {
+      while (this.timeTable.at(-1) > 10) {
         const time = delay / 4.0;
         delay -= time;
         this.timeTable.push(time);
       }
       for (let i = 0; i < 3; i++)
-        this.timeTable.push(Tools.arrayLast(this.timeTable));
+        this.timeTable.push(this.timeTable.at(-1));
     }
 
     get labelDOM() {
       return this._labelDOM;
     }
     set labelDOM(label) {
-      Tools.testType(Tools.getProto(label, 2), "HTMLElement");
+      if (!Tools.testType(Tools.getProto(label, 2), "HTMLElement")) throw new TypeError("Wheel setter: invalid argument type: expected HTMLElement, got " + typeof label);
       this._labelDOM = label;
     }
 
@@ -368,7 +371,7 @@
         `Chooser setter: itemList initialize.`,
         Tools.logObj(list)
       );
-      Tools.testType(list, "Array");
+      if (!Tools.testType(list, "Array")) throw new TypeError("Chooser.itemList: invalid argument type: expected Array, got " + typeof list);
       if (this.chooseList !== null)
         if (this.chooseList.length >= 0) {
           console.warn(
@@ -399,3 +402,52 @@
   }
   window.Chooser = Chooser;
 })();
+(() => {
+  class Animate {
+    constructor() {
+      this.funList = [];
+      this.working = false;
+    }
+    add(fun, interval, thisArg = window) {
+      const tmp = this.funList.push({
+        fun: fun,
+        interval: interval,
+        nextTrigger: performance.now() + interval,
+        thisArg: thisArg,
+      }) - 1;
+      if (!this.working) {
+        window.requestAnimationFrame(this.ani);
+        this.working = true;
+      }
+      return tmp;
+    }
+    del(id) {
+      const tmp = delete this.funList[id];
+      return tmp;
+    }
+    async ani(t) {
+      console.debug('ani', t);
+      if (!window.Animate.working) return;
+      try {
+        let flag = true;
+        for (let i = 0; i < window.Animate.funList.length; i++)
+          if (window.Animate.funList[i]) {
+            window.Animate.handle(t, window.Animate.funList[i], i);
+            flag = false;
+          }
+        window.Animate.working = flag;
+      } catch (e) {
+        if(!e instanceof TypeError) throw e; // TODO:
+      }
+      window.requestAnimationFrame(window.Animate.ani);
+    }
+    async handle(t, item, id) {
+      if (t > item.nextTrigger)
+        if (item.fun.call(item.thisArg, t))
+          item.nextTrigger = performance.now() + item.interval;
+        else
+          window.Animate.del(id);
+    }
+  }
+  window.Animate = new Animate(); // An App should have only one Animate instance
+})()
