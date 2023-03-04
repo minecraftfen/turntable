@@ -1,13 +1,5 @@
 (() => {
   class Tools {
-    /*
-    static arrayLast(arr) {
-      if(!Tools.testType(arr, "Array")) throw new TypeError("Tools.arrayLast: invalid argument type: expected Array, got " + typeof arr);
-      return arr.at(-1);
-      // This function is deprecated
-    }
-    */
-
     static testType(obj, expectedOutput) {
       let toStringOutput = Object.prototype.toString
         .call(obj)
@@ -23,7 +15,11 @@
       return obj;
     }
     static repeatArray(arr, times) {
-      if (!Tools.testType(arr, "Array")) throw new TypeError("Tools.repeatArray: invalid argument type: expected Array, got " + typeof arr);
+      if (!Tools.testType(arr, "Array"))
+        throw new TypeError(
+          "Tools.repeatArray: invalid argument type: expected Array, got " +
+          typeof arr
+        );
       let tmp = [];
       tmp[times - 2] = undefined;
       return Array.prototype.concat.apply(arr, tmp.fill(arr));
@@ -86,19 +82,24 @@
           console.debug("Wheel.turn: targeting success.");
           altThis.status = altThis.timeTable.length;
           time = altThis.timeTable[--altThis.status];
-        } else time = altThis.timeTable.at(-1);
+        } else time = altThis.timeTable[altThis.timeTable.length - 1];
       else time = altThis.timeTable[--altThis.status];
       let style = `--time:${time}ms;`;
       console.debug("Wheel.turn: status:", Tools.logObj(altThis.status));
       setTimeout(altThis.turn, time, altThis);
       let tmp = time / 2 - 100;
       if (altThis.status === 0) {
-        style += `--time-fun: cubic-bezier(0, 0, 0.2, 1);--delta: ${Math.random() * 22.5 - 11.25}deg;`;
+        style += `--time-fun: cubic-bezier(0, 0, 0.2, 1);--delta: ${Math.random() * 22.5 - 11.25
+          }deg;`;
         tmp /= 3;
       }
-      setTimeout((altThis) => {
-        altThis.labelDOM.innerText = altThis.output;
-      }, tmp, altThis);
+      setTimeout(
+        (altThis) => {
+          altThis.labelDOM.innerText = altThis.output;
+        },
+        tmp,
+        altThis
+      );
       // DOM operation is slow, so we need to put them in the end of functions;
       altThis.dom.appendChild(altThis.dom.firstElementChild);
       /*
@@ -120,7 +121,10 @@
       this.syncList();
       this.dom.classList.remove("rolling");
       //this.dom.output.classList.remove("selected");
-      this.dom.style = this.dom.style.cssText.replace("--time-fun: cubic-bezier(0, 0, 0.2, 1);", "");
+      this.dom.style = this.dom.style.cssText.replace(
+        "--time-fun: cubic-bezier(0, 0, 0.2, 1);",
+        ""
+      );
       this._target = null;
       for (let i = 0; i < this._onEnd.length; i++) this._onEnd[i]();
     }
@@ -206,7 +210,11 @@
     }
     set dom(dom) {
       console.debug("Wheel setter: initializing DOM:", Tools.logObj(dom));
-      if (!Tools.testType(Tools.getProto(dom, 2), "HTMLElement")) throw new TypeError("Wheel setter: invalid argument type: expected HTMLElement, got " + typeof dom);
+      if (!Tools.testType(Tools.getProto(dom, 2), "HTMLElement"))
+        throw new TypeError(
+          "Wheel setter: invalid argument type: expected HTMLElement, got " +
+          typeof dom
+        );
       this.initializeDOM(dom);
       dom.classList.add("wheelOuter");
       dom.jsObj = this;
@@ -231,7 +239,11 @@
       return this._itemList;
     }
     set itemList(list) {
-      if (!Tools.testType(list, "Array")) throw new TypeError("Wheel.itemList: invalid argument type: expected Array, got " + typeof list);
+      if (!Tools.testType(list, "Array"))
+        throw new TypeError(
+          "Wheel.itemList: invalid argument type: expected Array, got " +
+          typeof list
+        );
       list = list.map((e) => e.toString()).filter((e) => e !== "");
 
       if (list.length < 7)
@@ -254,25 +266,33 @@
         "Wheel setter: initializing timetable, delay =",
         Tools.logObj(delay)
       );
-      if (!Tools.testType(delay, "Number")) throw new TypeError("Wheel.delay: invalid argument type: expected Number, got " + typeof delay);
+      if (!Tools.testType(delay, "Number"))
+        throw new TypeError(
+          "Wheel.delay: invalid argument type: expected Number, got " +
+          typeof delay
+        );
       this._delay = delay;
 
       this.timeTable = [delay / 2.0];
       delay /= 2.0;
-      while (this.timeTable.at(-1) > 10) {
+      while (this.timeTable.at[this.timeTable.length - 1] > 10) {
         const time = delay / 4.0;
         delay -= time;
         this.timeTable.push(time);
       }
       for (let i = 0; i < 3; i++)
-        this.timeTable.push(this.timeTable.at(-1));
+        this.timeTable.push(this.timeTable[this.timeTable.length - 1]);
     }
 
     get labelDOM() {
       return this._labelDOM;
     }
     set labelDOM(label) {
-      if (!Tools.testType(Tools.getProto(label, 2), "HTMLElement")) throw new TypeError("Wheel setter: invalid argument type: expected HTMLElement, got " + typeof label);
+      if (!Tools.testType(Tools.getProto(label, 2), "HTMLElement"))
+        throw new TypeError(
+          "Wheel setter: invalid argument type: expected HTMLElement, got " +
+          typeof label
+        );
       this._labelDOM = label;
     }
 
@@ -341,9 +361,7 @@
     }
 
     choose() {
-      console.warn(
-        `Chooser getter: consider using getter "Chooser.next"?`
-      );
+      console.warn(`Chooser getter: consider using getter "Chooser.next"?`);
       return this.next;
     }
     reset(auto = true) {
@@ -367,11 +385,12 @@
       return this._itemList;
     }
     set itemList(list) {
-      console.debug(
-        `Chooser setter: itemList initialize.`,
-        Tools.logObj(list)
-      );
-      if (!Tools.testType(list, "Array")) throw new TypeError("Chooser.itemList: invalid argument type: expected Array, got " + typeof list);
+      console.debug(`Chooser setter: itemList initialize.`, Tools.logObj(list));
+      if (!Tools.testType(list, "Array"))
+        throw new TypeError(
+          "Chooser.itemList: invalid argument type: expected Array, got " +
+          typeof list
+        );
       if (this.chooseList !== null)
         if (this.chooseList.length >= 0) {
           console.warn(
@@ -390,10 +409,7 @@
       this.chooseList.splice(index, 1);
       console.debug("Chooser getter: output:", Tools.logObj(out));
       if (!out)
-        console.warn(
-          "Chooser getter: output doesn't seem right! output:",
-          out
-        );
+        console.warn("Chooser getter: output doesn't seem right! output:", out);
       return out;
     }
     set next(next) {
@@ -409,12 +425,13 @@
       this.working = false;
     }
     add(fun, interval, thisArg = window) {
-      const tmp = this.funList.push({
-        fun: fun,
-        interval: interval,
-        nextTrigger: performance.now() + interval,
-        thisArg: thisArg,
-      }) - 1;
+      const tmp =
+        this.funList.push({
+          fun: fun,
+          interval: interval,
+          nextTrigger: performance.now() + interval,
+          thisArg: thisArg,
+        }) - 1;
       if (!this.working) {
         window.requestAnimationFrame(this.ani);
         this.working = true;
@@ -426,28 +443,29 @@
       return tmp;
     }
     async ani(t) {
-      console.debug('ani', t);
       if (!window.Animate.working) return;
       try {
-        let flag = true;
+        let flag = false;
         for (let i = 0; i < window.Animate.funList.length; i++)
           if (window.Animate.funList[i]) {
             window.Animate.handle(t, window.Animate.funList[i], i);
-            flag = false;
+            flag = true;
           }
-        window.Animate.working = flag;
+        if (!flag) {
+          window.Animate.working = false;
+          return;
+        }
       } catch (e) {
-        if(!e instanceof TypeError) throw e; // TODO:
+        if (!e instanceof TypeError) throw e; // TODO:
       }
       window.requestAnimationFrame(window.Animate.ani);
     }
     async handle(t, item, id) {
       if (t > item.nextTrigger)
         if (item.fun.call(item.thisArg, t))
-          item.nextTrigger = performance.now() + item.interval;
-        else
-          window.Animate.del(id);
+          item.nextTrigger += item.interval;
+        else window.Animate.del(id);
     }
   }
   window.Animate = new Animate(); // An App should have only one Animate instance
-})()
+})();
