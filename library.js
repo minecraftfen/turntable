@@ -18,7 +18,7 @@
       if (!Tools.testType(arr, "Array"))
         throw new TypeError(
           "Tools.repeatArray: invalid argument type: expected Array, got " +
-          typeof arr
+            typeof arr
         );
       let tmp = [];
       tmp[times - 2] = undefined;
@@ -89,8 +89,9 @@
       setTimeout(altThis.turn, time, altThis);
       let tmp = time / 2 - 100;
       if (altThis.status === 0) {
-        style += `--time-fun: cubic-bezier(0, 0, 0.2, 1);--delta: ${Math.random() * 22.5 - 11.25
-          }deg;`;
+        style += `--time-fun: cubic-bezier(0, 0, 0.2, 1);--delta: ${
+          Math.random() * 22.5 - 11.25
+        }deg;`;
         tmp /= 3;
       }
       setTimeout(
@@ -130,9 +131,7 @@
     }
     syncList() {
       console.debug("Wheel.syncList: start.");
-      this._itemList = Array.from(this.dom.children).map(
-        (e) => e.innerText
-      ); // remember to prevent triggering DOM update
+      this._itemList = Array.from(this.dom.children).map((e) => e.innerText); // remember to prevent triggering DOM update
       console.debug(
         "Wheel.syncList: updating itemList (setter bypassed):",
         this.itemList
@@ -157,9 +156,7 @@
           }
           this.controller = new AbortController();
           const signal = this.controller.signal;
-          console.debug(
-            "Wheel [item mousedown handler]: enabled dragging"
-          );
+          console.debug("Wheel [item mousedown handler]: enabled dragging");
           window.addEventListener("mousemove", this.syncDelta, {
             signal: signal,
           });
@@ -173,14 +170,11 @@
           e.target.parentElement.classList.add("overview");
           Main.help.innerText = Main.msgDict.help.overview;
           window.addEventListener("mouseup", () => {
-            console.debug(
-              "Wheel [item mousedown handler]: disabled dragging"
-            );
+            console.debug("Wheel [item mousedown handler]: disabled dragging");
             Main.wheel.controller.abort();
           });
         });
-        if (this.itemList.indexOf(item) !== index)
-          obj.classList.add("repeat");
+        if (this.itemList.indexOf(item) !== index) obj.classList.add("repeat");
         outer.appendChild(obj);
       });
     }
@@ -197,9 +191,7 @@
       // TODO: standardize this
     }
     get onEnd() {
-      console.warn(
-        `Wheel.onEnd: get "Wheel.onEnd" won't return any value.`
-      );
+      console.warn(`Wheel.onEnd: get "Wheel.onEnd" won't return any value.`);
       return null;
     }
     set onEnd(callback) {
@@ -213,7 +205,7 @@
       if (!Tools.testType(Tools.getProto(dom, 2), "HTMLElement"))
         throw new TypeError(
           "Wheel setter: invalid argument type: expected HTMLElement, got " +
-          typeof dom
+            typeof dom
         );
       this.initializeDOM(dom);
       dom.classList.add("wheelOuter");
@@ -242,7 +234,7 @@
       if (!Tools.testType(list, "Array"))
         throw new TypeError(
           "Wheel.itemList: invalid argument type: expected Array, got " +
-          typeof list
+            typeof list
         );
       list = list.map((e) => e.toString()).filter((e) => e !== "");
 
@@ -269,7 +261,7 @@
       if (!Tools.testType(delay, "Number"))
         throw new TypeError(
           "Wheel.delay: invalid argument type: expected Number, got " +
-          typeof delay
+            typeof delay
         );
       this._delay = delay;
 
@@ -291,7 +283,7 @@
       if (!Tools.testType(Tools.getProto(label, 2), "HTMLElement"))
         throw new TypeError(
           "Wheel setter: invalid argument type: expected HTMLElement, got " +
-          typeof label
+            typeof label
         );
       this._labelDOM = label;
     }
@@ -389,7 +381,7 @@
       if (!Tools.testType(list, "Array"))
         throw new TypeError(
           "Chooser.itemList: invalid argument type: expected Array, got " +
-          typeof list
+            typeof list
         );
       if (this.chooseList !== null)
         if (this.chooseList.length >= 0) {
@@ -462,8 +454,7 @@
     }
     async handle(t, item, id) {
       if (t > item.nextTrigger)
-        if (item.fun.call(item.thisArg, t))
-          item.nextTrigger += item.interval;
+        if (item.fun.call(item.thisArg, t)) item.nextTrigger += item.interval;
         else window.Animate.del(id);
     }
   }
